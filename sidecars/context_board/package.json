@@ -1,0 +1,6 @@
+{
+  "name": "context_board",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Read-only Antigravity context & token dashboard sidecar"
+}

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Context Dashboard</title>
+  <script src="/preload.js"></script>
+  <link rel="stylesheet" href="/styles.css?v=3">
+</head>
+<body>
+  <div class="shell">
+    <header class="header">
+      <div class="header-top">
+        <div class="title-group">
+          <span class="live-dot" id="live-dot" title="自动轮询中"></span>
+          <h1 class="title">Context Dashboard</h1>
+          <span class="badge badge-plan hidden" id="plan-badge"></span>
+        </div>
+        <div class="header-actions">
+          <button id="collapse-btn" class="icon-btn" type="button" title="展开或折叠详情">▾ 展开</button>
+          <button id="refresh-btn" class="icon-btn" type="button" title="立即刷新">↻</button>
+        </div>
+      </div>
+
+      <div id="compact-bar" class="compact-bar mono">
+        <span id="compact-text">加载中...</span>
+      </div>
+
+      <div id="conv-picker-row" class="conv-picker-row">
+        <select id="conv-select" class="conv-select" aria-label="选择会话"></select>
+        <span id="model-pill" class="model-pill">—</span>
+      </div>
+
+      <nav id="tabs-nav" class="tabs" role="tablist">
+        <button class="tab active" data-tab="context" role="tab" aria-selected="true" type="button">上下文</button>
+        <button class="tab" data-tab="quotas" role="tab" aria-selected="false" type="button">模型配额</button>
+        <button class="tab" data-tab="history" role="tab" aria-selected="false" type="button">Token 历史</button>
+      </nav>
+    </header>
+
+    <main id="main-content" class="content">
+      <div id="error-banner" class="error-banner hidden"></div>
+
+      <!-- Tab 1: 当前上下文 -->
+      <section id="panel-context" class="panel active">
+        <div id="context-empty" class="empty-state hidden">暂无活跃会话数据</div>
+        <div id="context-body">
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">上下文窗口占用</span>
+              <span id="compress-badge" class="badge badge-warn hidden">🗜 检测到压缩</span>
+            </div>
+
+            <div class="meter-block">
+              <div class="meter-label-row">
+                <span>压缩阈值 (推荐上限)</span>
+                <span id="comp-text" class="mono">—</span>
+              </div>
+              <div class="progress-track">
+                <div id="comp-bar" class="progress-fill" style="width:0%"></div>
+              </div>
+            </div>
+
+            <div class="meter-block">
+              <div class="meter-label-row">
+                <span>模型物理窗口</span>
+                <span id="model-ctx-text" class="mono">—</span>
+              </div>
+              <div class="progress-track progress-thin">
+                <div id="model-ctx-bar" class="progress-fill fill-subtle" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-label">本轮新输入 / 缓存</div>
+              <div id="kpi-input" class="kpi-value mono">—</div>
+              <div id="kpi-cache-rate" class="kpi-sub">命中率 —</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">最近生成速度</div>
+              <div id="kpi-speed" class="kpi-value mono">—</div>
+              <div id="kpi-ttft" class="kpi-sub">TTFT —</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">本会话累计 Token</div>
+              <div id="kpi-total" class="kpi-value mono">—</div>
+              <div id="kpi-calls" class="kpi-sub">— 次调用</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">思考 / 文本输出</div>
+              <div id="kpi-output-split" class="kpi-value mono">—</div>
+              <div id="kpi-avg-speed" class="kpi-sub">均速 —</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">最近推理步骤明细</span>
+              <span id="turns-count" class="muted mono"></span>
+            </div>
+            <div id="turns-list" class="turns-list"></div>
+            <div id="turns-pager" class="turns-pager hidden">
+              <button id="turns-more-btn" class="pager-btn" type="button">查看更多 (+20)</button>
+              <button id="turns-reset-btn" class="text-btn hidden" type="button">收起</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 2: 模型配额 -->
+      <section id="panel-quotas" class="panel">
+        <div id="quotas-list" class="quotas-list"></div>
+      </section>
+
+      <!-- Tab 3: Token 历史 -->
+      <section id="panel-history" class="panel">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">本地累计总用量</div>
+            <div id="hist-total" class="kpi-value mono">—</div>
+            <div id="hist-convs" class="kpi-sub">— 个会话</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">总缓存命中率</div>
+            <div id="hist-cache" class="kpi-value mono">—</div>
+            <div id="hist-sources" class="kpi-sub">Desktop + CLI</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">近 12 周 Token 活跃热力图</span>
+            <button id="hist-refresh-btn" class="text-btn" type="button">重新扫描</button>
+          </div>
+          <div id="heatmap-grid" class="heatmap-grid"></div>
+          <div id="heatmap-tip" class="heatmap-tip muted">悬停格子查看单日 Token 详情</div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">来源与模型分布</span>
+          </div>
+          <div id="history-breakdown" class="breakdown-list"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/app.js?v=3"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "context-dashboard",
+  "displayName": "Context Dashboard",
+  "version": "1.0.0",
+  "description": "Read-only Antigravity sidecar dashboard for real-time context window usage, generation speed, model quotas, and historical token heatmaps.",
+  "logo": "assets/logo.svg",
+  "suggestedPrompts": [
+    "打开上下文与 Token 监控面板",
+    "分析当前对话的上下文占用、压缩阈值和缓存命中率",
+    "查看当前所有模型的剩余配额和最近 Token 消耗趋势"
+  ]
+}
